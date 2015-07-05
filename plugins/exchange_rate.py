@@ -18,8 +18,8 @@ from electrum_gui.qt.util import *
 from electrum_gui.qt.amountedit import AmountEdit
 
 
-EXCHANGES = ["BitcoinAverage",
-             "BitcoinVenezuela",
+EXCHANGES = ["BitcreditAverage",
+             "BitcreditVenezuela",
              "BTCParalelo",
              "Bitcurex",
              "Bitmarket",
@@ -30,13 +30,13 @@ EXCHANGES = ["BitcoinAverage",
              "Coinbase",
              "CoinDesk",
              "itBit",
-             "LocalBitcoins",
+             "LocalBitcredits",
              "Winkdex"]
 
 EXCH_SUPPORT_HIST = [("CoinDesk", "USD"),
                      ("Winkdex", "USD"),
-                     ("BitcoinVenezuela", "ARS"),
-                     ("BitcoinVenezuela", "VEF")]
+                     ("BitcreditVenezuela", "ARS"),
+                     ("BitcreditVenezuela", "VEF")]
 
 class Exchanger(threading.Thread):
 
@@ -72,8 +72,8 @@ class Exchanger(threading.Thread):
     def update_rate(self):
         self.use_exchange = self.parent.config.get('use_exchange', "Blockchain")
         update_rates = {
-            "BitcoinAverage": self.update_ba,
-            "BitcoinVenezuela": self.update_bv,
+            "BitcreditAverage": self.update_ba,
+            "BitcreditVenezuela": self.update_bv,
             "BTCParalelo": self.update_bpl,
             "Bitcurex": self.update_bx,
             "Bitmarket": self.update_bm,
@@ -84,7 +84,7 @@ class Exchanger(threading.Thread):
             "CoinDesk": self.update_cd,
             "Coinbase": self.update_cb,
             "itBit": self.update_ib,
-            "LocalBitcoins": self.update_lb,
+            "LocalBitcredits": self.update_lb,
             "Winkdex": self.update_wd,
         }
         try:
@@ -298,7 +298,7 @@ class Plugin(BasePlugin):
                 self.resp_hist = self.exchanger.get_json('winkdex.com', "/api/v0/series?start_time=1342915200")['series'][0]['results']
             except Exception:
                 return
-        elif self.cur_exchange == "BitcoinVenezuela":
+        elif self.cur_exchange == "BitcreditVenezuela":
             cur_currency = self.fiat_unit()
             if cur_currency == "VEF":
                 try:
@@ -355,7 +355,7 @@ class Plugin(BasePlugin):
                     tx_fiat_val = "%.2f %s" % (self.btc_rate * Decimal(tx_info['value'])/COIN , "USD")
                 except KeyError:
                     tx_fiat_val = _("No data")
-            elif self.cur_exchange == "BitcoinVenezuela":
+            elif self.cur_exchange == "BitcreditVenezuela":
                 tx_time_str = datetime.datetime.fromtimestamp(tx_time).strftime('%Y-%m-%d')
                 try:
                     num = self.resp_hist[tx_time_str].replace(',','')
@@ -440,7 +440,7 @@ class Plugin(BasePlugin):
 
         def set_hist_check(hist_checkbox):
             cur_exchange = self.config.get('use_exchange', "Blockchain")
-            hist_checkbox.setEnabled(cur_exchange in ["CoinDesk", "Winkdex", "BitcoinVenezuela"])
+            hist_checkbox.setEnabled(cur_exchange in ["CoinDesk", "Winkdex", "BitcreditVenezuela"])
 
         def set_currencies(combo):
             try:

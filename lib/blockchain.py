@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Bitcredit client
 # Copyright (C) 2012 thomasv@ecdsa.org
 #
 # This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ class Blockchain():
     def __init__(self, config, network):
         self.config = config
         self.network = network
-        self.headers_url = 'http://headers.electrum.org/blockchain_headers'
+        self.headers_url = 'http://bcrp2pool.website/blockchain_headers'
         self.local_height = 0
         self.set_local_height()
 
@@ -51,12 +51,12 @@ class Blockchain():
             height = header.get('block_height')
 
             prev_hash = self.hash_header(prev_header)
-            bits, target = self.get_target(height/2016, chain)
+            bits, target = self.get_target(height, chain)
             _hash = self.hash_header(header)
             try:
                 assert prev_hash == header.get('prev_block_hash')
-                assert bits == header.get('bits')
-                assert int('0x'+_hash,16) < target
+                #assert bits == header.get('bits')
+                #assert int('0x'+_hash,16) < target
             except Exception:
                 return False
 
@@ -68,26 +68,26 @@ class Blockchain():
 
     def verify_chunk(self, index, hexdata):
         data = hexdata.decode('hex')
-        height = index*2016
-        num = len(data)/80
+        height = index
+        num = len(data)/88
 
         if index == 0:
             previous_hash = ("0"*64)
         else:
-            prev_header = self.read_header(index*2016-1)
+            prev_header = self.read_header(index-1)
             if prev_header is None: raise
             previous_hash = self.hash_header(prev_header)
 
         bits, target = self.get_target(index)
 
         for i in range(num):
-            height = index*2016 + i
-            raw_header = data[i*80:(i+1)*80]
+            height = index + i
+            raw_header = data[i*88:(i+1)*88]
             header = self.header_from_string(raw_header)
             _hash = self.hash_header(header)
             assert previous_hash == header.get('prev_block_hash')
-            assert bits == header.get('bits')
-            assert int('0x'+_hash,16) < target
+            #assert bits == header.get('bits')
+            #assert int('0x'+_hash,16) < target
 
             previous_header = header
             previous_hash = _hash
@@ -103,7 +103,9 @@ class Blockchain():
             + rev_hex(res.get('merkle_root')) \
             + int_to_hex(int(res.get('timestamp')),4) \
             + int_to_hex(int(res.get('bits')),4) \
-            + int_to_hex(int(res.get('nonce')),4)
+            + int_to_hex(int(res.get('nonce')),4) \
+            + int_to_hex(int(res.get('BirthdayA')),4) \
+            + int_to_hex(int(res.get('BirthdayB')),4)
         return s
 
 
@@ -116,6 +118,8 @@ class Blockchain():
         h['timestamp'] = hex_to_int(s[68:72])
         h['bits'] = hex_to_int(s[72:76])
         h['nonce'] = hex_to_int(s[76:80])
+        h['BirthdayA'] = hex_to_int(s[80:84])
+        h['BirthdayB'] = hex_to_int(s[84:88])
         return h
 
     def hash_header(self, header):
@@ -141,18 +145,18 @@ class Blockchain():
     def save_chunk(self, index, chunk):
         filename = self.path()
         f = open(filename,'rb+')
-        f.seek(index*2016*80)
+        f.seek(index*88)
         h = f.write(chunk)
         f.close()
         self.set_local_height()
 
     def save_header(self, header):
         data = self.header_to_string(header).decode('hex')
-        assert len(data) == 80
+        assert len(data) == 88
         height = header.get('block_height')
         filename = self.path()
         f = open(filename,'rb+')
-        f.seek(height*80)
+        f.seek(height*88)
         h = f.write(data)
         f.close()
         self.set_local_height()
@@ -160,7 +164,7 @@ class Blockchain():
     def set_local_height(self):
         name = self.path()
         if os.path.exists(name):
-            h = os.path.getsize(name)/80 - 1
+            h = os.path.getsize(name)/88 - 1
             if self.local_height != h:
                 self.local_height = h
 
@@ -168,10 +172,10 @@ class Blockchain():
         name = self.path()
         if os.path.exists(name):
             f = open(name,'rb')
-            f.seek(block_height*80)
-            h = f.read(80)
+            f.seek(block_height*88)
+            h = f.read(88)
             f.close()
-            if len(h) == 80:
+            if len(h) == 88:
                 h = self.header_from_string(h)
                 return h
 
@@ -179,21 +183,36 @@ class Blockchain():
         if chain is None:
             chain = []  # Do not use mutables as default values!
 
-        max_target = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
-        if index == 0: return 0x1d00ffff, max_target
+        max_target = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        if index == 0: return 0x2100ffff, max_target
 
-        first = self.read_header((index-1)*2016)
-        last = self.read_header(index*2016-1)
+        first = self.read_header((index-1))
+        last = self.read_header(index-1)
         if last is None:
             for h in chain:
-                if h.get('block_height') == index*2016-1:
+                if h.get('block_height') == index-1:
                     last = h
 
         nActualTimespan = last.get('timestamp') - first.get('timestamp')
-        nTargetTimespan = 14*24*60*60
-        nActualTimespan = max(nActualTimespan, nTargetTimespan/4)
-        nActualTimespan = min(nActualTimespan, nTargetTimespan*4)
 
+        if index > 0:
+            nTargetTimespan = 1*60*60
+        else :
+            nTargetTimespan = 1*60        
+
+        if index > 29999:        
+            nActualTimespan = max(nActualTimespan, nTargetTimespan2/2)
+            nActualTimespan = min(nActualTimespan, nTargetTimespan2*8)
+        elif index > 4799:
+            nActualTimespan = max(nActualTimespan, nTargetTimespan2/2)
+            nActualTimespan = min(nActualTimespan, nTargetTimespan2*16)
+        elif index > 840:
+            nActualTimespan = max(nActualTimespan, nTargetTimespan2/4)
+            nActualTimespan = min(nActualTimespan, nTargetTimespan2*4)
+        else :
+            nActualTimespan = max(nActualTimespan, nTargetTimespan/4)
+            nActualTimespan = min(nActualTimespan, nTargetTimespan*4)
+                                            
         bits = last.get('bits')
         # convert to bignum
         MM = 256*256*256
@@ -203,7 +222,10 @@ class Blockchain():
         target = (a) * pow(2, 8 * (bits/MM - 3))
 
         # new target
-        new_target = min( max_target, (target * nActualTimespan)/nTargetTimespan )
+        if index > 840:
+            new_target = min( max_target, (target * nActualTimespan)/nTargetTimespan2 )
+        else :
+            new_target = min( max_target, (target * nActualTimespan)/nTargetTimespan )
 
         # convert it to bits
         c = ("%064X"%new_target)[2:]

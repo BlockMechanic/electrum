@@ -70,7 +70,7 @@ class Contacts(StoreDict):
                 'validated': validated
             }
 
-        raise Exception("Invalid Bitcoin address or alias", k)
+        raise Exception("Invalid Bitcredit address or alias", k)
 
     def resolve_openalias(self, url):
         '''Resolve OpenAlias address using url.'''
