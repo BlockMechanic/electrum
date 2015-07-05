@@ -495,9 +495,9 @@ class ElectrumWindow(QMainWindow):
         if self.decimal_point == 2:
             return 'bits'
         if self.decimal_point == 5:
-            return 'mBTC'
+            return 'mBCR'
         if self.decimal_point == 8:
-            return 'BTC'
+            return 'BCR'
         raise Exception('Unknown base unit')
 
     def update_status(self):
@@ -2499,22 +2499,22 @@ class ElectrumWindow(QMainWindow):
 
         widgets.append((fee_label, fee_e, fee_help))
 
-        units = ['BTC', 'mBTC', 'bits']
+        units = ['BCR', 'mBCR', 'bits']
         unit_label = QLabel(_('Base unit') + ':')
         unit_combo = QComboBox()
         unit_combo.addItems(units)
         unit_combo.setCurrentIndex(units.index(self.base_unit()))
         msg = _('Base unit of your wallet.')\
-              + '\n1BTC=1000mBTC.\n' \
+              + '\n1BTC=1000mBCR.\n' \
               + _(' These settings affects the fields in the Send tab')+' '
         unit_help = HelpButton(msg)
         def on_unit(x):
             unit_result = units[unit_combo.currentIndex()]
             if self.base_unit() == unit_result:
                 return
-            if unit_result == 'BTC':
+            if unit_result == 'BCR':
                 self.decimal_point = 8
-            elif unit_result == 'mBTC':
+            elif unit_result == 'mBCR':
                 self.decimal_point = 5
             elif unit_result == 'bits':
                 self.decimal_point = 2
