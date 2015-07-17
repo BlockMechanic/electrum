@@ -15,7 +15,7 @@ import interface
 from blockchain import Blockchain
 from collections import deque
 
-DEFAULT_PORTS = {'t':'70001', 's':'50002', 'h':'8879', 'g':'8082'}
+DEFAULT_PORTS = {'t':'70001', 's':'70002', 'h':'8879', 'g':'8082'}
 
 DEFAULT_SERVERS = {
     'www.bcrp2pool.website':DEFAULT_PORTS,
