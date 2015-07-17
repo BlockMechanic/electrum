@@ -18,8 +18,8 @@ from collections import deque
 DEFAULT_PORTS = {'t':'70001', 's':'50002', 'h':'8879', 'g':'8082'}
 
 DEFAULT_SERVERS = {
-    'bcrp2pool.website':DEFAULT_PORTS,
-    'p2pool.website':DEFAULT_PORTS,
+    'www.bcrp2pool.website':DEFAULT_PORTS,
+    'www.p2pool.website':DEFAULT_PORTS,
 }
 
 NODES_RETRY_INTERVAL = 60
